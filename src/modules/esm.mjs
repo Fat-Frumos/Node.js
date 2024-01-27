@@ -9,11 +9,8 @@ const dir = dirname(new URL(import.meta.url).pathname);
 
 const PORT = 3000;
 const cjs = './files/c.js';
-const a = './files/a.json';
-const b = './files/b.json';
-
 const random = Math.random();
-const jsonFileName = (random > 0.5) ? a : b;
+const jsonFileName = (random > 0.5) ? './files/a.json' : './files/b.json';
 
 import(cjs).catch(error => console.error('Error importing module:', error.message));
 
@@ -30,7 +27,7 @@ const readJsonFile = async (json) => {
     }
 };
 
-const unknownObject = await readJsonFile(resolve(__dirname, `${jsonFileName}`));
+export const unknownObject = await readJsonFile(resolve(__dirname, `${jsonFileName}`));
 
 console.log(`Release ${release()}`);
 console.log(`Version ${version()}`);
@@ -39,7 +36,7 @@ console.log(`Path segment separator is "${sep}"`);
 console.log(`Path to current file is ${import.meta.url}`);
 console.log(`Path to current directory is ${dir}`);
 
-const myServer = createServerHttp((_, res) => res.end('Request accepted'));
+export const myServer = createServerHttp((_, res) => res.end('Request accepted'));
 
 console.log(unknownObject);
 
@@ -47,5 +44,3 @@ myServer.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`);
     console.log('To terminate it, use Ctrl+C combination');
 });
-
-export { unknownObject, myServer };

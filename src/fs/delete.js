@@ -1,10 +1,11 @@
 import {access, unlink} from 'fs/promises';
+import {failedError} from "./lib/error.js";
+
+const src = 'src/fs/files';
+const fileName = 'fileToRemove.txt';
+const filePath = `${src}/${fileName}`;
 
 const remove = async () => {
-
-    const src = 'src/fs/files';
-    const fileName = 'fileToRemove.txt';
-    const filePath = `${src}/${fileName}`;
 
     try {
         await access(filePath);
@@ -12,7 +13,7 @@ const remove = async () => {
         console.log('File deleted successfully.');
     } catch (error) {
         if (error.code === 'ENOENT') {
-            throw new Error('FS operation failed');
+            throw failedError;
         } else {
             console.error(error.message);
         }

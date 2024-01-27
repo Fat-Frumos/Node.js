@@ -6,9 +6,11 @@ const parseArgs = () => {
             acc.push(`${arg.substring(2)} is ${args[index + 1]}`);
         }
         return acc;
-    }, []).join(', ');
+    }, []);
 
-    console.log(parsedArgs);
+    const joined = parsedArgs.join(', ');
+
+    console.log(joined);
 };
 
 parseArgs();

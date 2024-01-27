@@ -3,14 +3,14 @@ import {createHash} from 'crypto';
 import {fileURLToPath} from 'url';
 import {resolve, dirname} from 'path';
 
-const calcHash = async () => {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const fileSrc = 'fileToCalculateHashFor.txt';
+const filePath = resolve(__dirname, 'files', fileSrc);
+const hash = createHash('sha256');
+const stream = createReadStream(filePath);
 
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = dirname(__filename);
-    const fileSrc = 'fileToCalculateHashFor.txt';
-    const filePath = resolve(__dirname, 'files', fileSrc);
-    const hash = createHash('sha256');
-    const stream = createReadStream(filePath);
+const calcHash = async () => {
 
     return new Promise((resolve, reject) => {
 

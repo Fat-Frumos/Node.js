@@ -1,8 +1,9 @@
 import {access, readdir} from 'fs/promises';
+import {failedError} from "./lib/error.js";
+
+const src = 'src/fs/files';
 
 const list = async () => {
-
-    const src = 'src/fs/files';
 
     try {
         await access(src);
@@ -10,7 +11,7 @@ const list = async () => {
         console.log(files);
     } catch (error) {
         if (error.code === 'ENOENT') {
-            throw new Error('FS operation failed');
+            throw failedError;
         } else {
             console.error(error.message);
         }
