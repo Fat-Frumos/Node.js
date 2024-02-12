@@ -1,0 +1,1 @@
+export const failedError = new Error('FS operation failed');
