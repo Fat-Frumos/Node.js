@@ -1,47 +1,12 @@
-import dotenv from 'dotenv';
-import http from 'http';
+import express from 'express';
+import {UserRouter} from './app/route/users';
 
-dotenv.config();
+const app = express();
+app.use(express.json());
 
-const PORT = process.env.PORT ?? 3000;
+const userRouter = new UserRouter();
+app.use('/api/users', userRouter.router);
 
-const server = http.createServer((req, res) => {
-  if (req.url === '/api/users') {
-    if (req.method === 'GET') {
-      res.writeHead(200, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify([]));
-    } else {
-      res.writeHead(404, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify({message: 'Endpoint not found'}));
-    }
-  } else if (req.url?.startsWith('/api/users/')) {
-    if (req.method === 'GET') {
-      const userId = req.url.split('/')[3];
-      const user = {
-        id: userId,
-        username: 'John',
-        age: 30,
-        hobbies: ['coding', 'reading']
-      };
-      if (user) {
-        res.writeHead(200, {'Content-Type': 'application/json'});
-        res.end(JSON.stringify(user));
-      } else {
-        res.writeHead(404, {'Content-Type': 'application/json'});
-        res.end(JSON.stringify({message: 'User not found'}));
-      }
-    } else {
-      res.writeHead(404, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify({message: 'Endpoint not found'}));
-    }
-  } else {
-    res.writeHead(404, {'Content-Type': 'application/json'});
-    res.end(JSON.stringify({message: 'Endpoint not found'}));
-  }
-});
+app.listen(3000, () => console.log('Server running on port 3000'));
 
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-
-export default server;
+export default app;

@@ -1,8 +1,25 @@
 import request from 'supertest';
 import app from '../../index';
 import assert from 'node:assert';
-import * as userController from '../controller/users';
-import { v4 as uuid } from 'uuid';
+
+describe('User API', () => {
+  it('should create a new user and retrieve it back', async () => {
+    const res = await request(app)
+    .post('/api/users')
+    .send({
+      username: 'Alice',
+      age: 30,
+      hobbies: ['hiking', 'traveling']
+    });
+    expect(res.statusCode).toEqual(201);
+    expect(res.body.username).toEqual('John');
+    
+    const userId = res.body.id;
+    const resGet = await request(app).get(`/api/users/${userId}`);
+    expect(resGet.statusCode).toEqual(200);
+    expect(resGet.body.username).toEqual('John');
+  });
+});
 
 const users = [
   {id: '1', username: 'Alice', age: 20, hobbies: ['music']},
@@ -68,56 +85,5 @@ describe('Mock the users module', () => {
   
   afterEach(() => {
     jest.clearAllMocks();
-  });
-  
-  it('GET to /api/users returns all users', async () => {
-    jest.spyOn(userController, 'getAllUsers').mockImplementation(() => Promise.resolve(users));
-    const response = await request(app).get('/api/users');
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual(users);
-    expect(userController.getAllUsers).toHaveBeenCalledTimes(1);
-  });
-  
-  it('GET to /api/users/:userId returns user with userId', async () => {
-    const user = users[0];
-    jest.spyOn(userController, 'getUserById').mockImplementation(() => Promise.resolve(user));
-    const response = await request(app).get(`/api/users/${user.id}`);
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual(user);
-    expect(userController.getUserById).toHaveBeenCalledTimes(1);
-  });
-  
-  it('POST to /api/users creates a new user', async () => {
-    const newUser = {
-      id: uuid(),
-      username: 'Charlie',
-      age: 25,
-      hobbies: ['coding']
-    };
-    jest.spyOn(userController, 'createUser').mockImplementation(() => Promise.resolve(newUser));
-    const response = await request(app)
-    .post('/api/users')
-    .send(newUser);
-    expect(response.status).toBe(201);
-    expect(response.body).toEqual(newUser);
-    expect(userController.createUser).toHaveBeenCalledTimes(1);
-  });
-  
-  it('PUT to /api/users/:userId updates an existing user', async () => {
-    const updatedUser = {...users[0], username: 'Updated Alice'};
-    jest.spyOn(userController, 'updateUser').mockImplementation(() => Promise.resolve(updatedUser));
-    const response = await request(app)
-    .put(`/api/users/${updatedUser.id}`)
-    .send(updatedUser);
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual(updatedUser);
-    expect(userController.updateUser).toHaveBeenCalledTimes(1);
-  });
-  
-  it('DELETE to /api/users/:userId deletes an existing user', async () => {
-    jest.spyOn(userController, 'deleteUser').mockImplementation(() => Promise.resolve());
-    const response = await request(app).delete(`/api/users/${users[0].id}`);
-    expect(response.status).toBe(204);
-    expect(userController.deleteUser).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,18 +1,63 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "CommonJS",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist",
-    "rootDir": "./src"
+  "ts-node": {
+    "files": true
   },
+  "compilerOptions": {
+    "paths": {
+      "@angular/core/testing": [
+        "app/core/testing"
+      ],
+      "@app/*": ["src/*"],
+    },
+    "typeRoots": [
+      "src/types",
+      "node_modules/@types",
+      "node_modules/jest-preset-angular/types"
+    ],
+    "strictPropertyInitialization": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "sourceMap": true,
+    "declaration": false,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "useDefineForClassFields": false,
+    "lib": [
+      "ES2022",
+      "dom"
+    ],
+    "target": "es2022",
+    "module": "commonjs",
+    "rootDir": "src",
+    "moduleResolution": "Node",
+    "baseUrl": "src",
+    "allowJs": true,
+    "outDir": "build",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "compileOnSave": false,
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "node_modules/@types"
   ],
   "exclude": [
-    "./node_modules"
-  ]
+    "node_modules",
+    ".eslintrc.js",
+    "webpack.config.js",
+    "build"
+  ],
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
+  }
 }
