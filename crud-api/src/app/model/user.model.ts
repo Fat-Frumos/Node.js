@@ -4,14 +4,28 @@ export interface User {
   id: string;
   username: string;
   age: number;
-  hobbies: string[];
+  hobbies: Hobby[];
 }
 
-export function createUser(username: string, age: number, hobbies: string[]): User {
+export interface Hobby {
+  id: string;
+  name: string;
+  userId: string;
+}
+
+export function createUser(username: string, age: number, hobbies: Hobby[]): User {
   return {
     id: uuidv4(),
     username,
     age,
     hobbies
+  };
+}
+
+export function createHobby(name: string, userId: string): Hobby {
+  return {
+    id: uuidv4(),
+    name,
+    userId
   };
 }

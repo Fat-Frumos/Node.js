@@ -1,18 +1,21 @@
 import {Request, Response} from 'express';
-import {createUser} from '../model/user.model';
-import {InMemoryDB} from '../dao/inMemory.database';
+import {createUser, User} from '../model/user.model';
+import {DBManager} from '../dao/database.manager';
+import {DatabaseType} from '../dao/database.type';
+import {DatabaseModel} from '../dao/database.model';
 
-const db = new InMemoryDB();
+const dao: DatabaseModel = DBManager.connect(DatabaseType.MySQL);
 
 export const userController = {
+  
   getAllUsers: async (_req: Request, res: Response) => {
-    const users = db.findAllUsers();
+    const users = dao.getAllUsers();
     res.status(200).json(users);
   },
   
   getUserById: async (req: Request, res: Response) => {
     const id = req.params['id'];
-    const user = db.findUserById(id);
+    const user: User | null = dao.getUserById(id);
     if (user) {
       res.status(200).json(user);
     } else {
@@ -27,8 +30,8 @@ export const userController = {
       return;
     }
     const user = createUser(username, age, hobbies);
-    db.createUser(user);
-    res.status(201).json(user);
+    const saved = dao.createUser(user);
+    res.status(201).json(saved);
   },
   
   updateUser: async (req: Request, res: Response) => {
@@ -39,7 +42,7 @@ export const userController = {
       return;
     }
     const user = createUser(username, age, hobbies);
-    const updatedUser = db.updateUser(id, user);
+    const updatedUser = dao.updateUser(id, user);
     if (updatedUser) {
       res.status(200).json(updatedUser);
     } else {
@@ -49,7 +52,7 @@ export const userController = {
   
   deleteUser: async (req: Request, res: Response) => {
     const id = req.params['id'];
-    const deleted = db.deleteUser(id);
+    const deleted: boolean = dao.deleteUser(id);
     if (deleted) {
       res.status(204).send();
     } else {

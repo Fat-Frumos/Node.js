@@ -1,7 +1,6 @@
 import express from 'express';
 import {userController} from '../controller/user.controller';
 
-
 export class UserRouter {
   public router = express.Router();
   

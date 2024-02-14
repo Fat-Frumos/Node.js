@@ -1,34 +1,55 @@
-import {User} from 'app/model/user.model';
+import {Hobby, User} from 'app/model/user.model';
+import {DatabaseModel} from './database.model';
 
-export class InMemoryDB {
-  private users: { [id: string]: User } = {};
+export class InMemory implements DatabaseModel {
+  private users: User[] = [];
+  private hobbies: Hobby[] = [];
   
-  public findUserById(id: string): User | undefined {
-    return this.users[id];
+  getUserById(id: string): User | null {
+    return this.users.find(user => user.id === id) ?? null;
   }
   
-  public findAllUsers(): User[] {
-    return Object.values(this.users);
+  getAllUsers(): User[] {
+    return this.users;
   }
   
-  public createUser(user: User): User {
-    this.users[user.id] = user;
+  createUser(user: User): User {
+    this.users.push(user);
     return user;
   }
   
-  public updateUser(id: string, user: User): User | undefined {
-    if (this.users[id]) {
-      this.users[id] = user;
+  updateUser(id: string, user: User): User | null {
+    const index = this.users.findIndex(u => u.id === id);
+    if (index !== -1) {
+      this.users[index] = user;
       return user;
     }
-    return undefined;
+    return null;
   }
   
-  public deleteUser(id: string): boolean {
-    if (this.users[id]) {
-      delete this.users[id];
+  deleteUser(id: string): boolean {
+    const index = this.users.findIndex(user => user.id === id);
+    if (index !== -1) {
+      this.users.splice(index, 1);
       return true;
     }
     return false;
+  }
+  
+  getAllHobbies(): Hobby[] {
+    return this.hobbies;
+  }
+  
+  getHobbyById(id: string): Hobby | null {
+    return this.hobbies.find(hobby => hobby.id === id) ?? null;
+  }
+  
+  createHobby(hobby: Hobby): Hobby {
+    this.hobbies.push(hobby);
+    return hobby;
+  }
+  
+  getHobbiesByUserId(userId: string): Hobby[] {
+    return this.hobbies.filter(hobby => hobby.userId === userId);
   }
 }
