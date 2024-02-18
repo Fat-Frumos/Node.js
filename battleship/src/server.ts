@@ -1,17 +1,12 @@
 import { Server as WebSocketServer } from 'ws';
-import { handleRequest, handleResponse } from "./handler/commandHandler";
+import { eventListener } from "./handler/factory";
 
 const wss: WebSocketServer = new WebSocketServer({ port: 3000 });
 
 wss.on('connection', (ws) => {
   ws.on("message", (message: string) => {
-    const response = handleResponse(message, ws);
+    const response = eventListener(message, ws);
     ws.send(JSON.stringify(response));
-  });
-  
-  ws.on("message", (message: string) => {
-    console.log("Received message:", message);
-    handleRequest(message, ws);
   });
   
   ws.on('close', () => {

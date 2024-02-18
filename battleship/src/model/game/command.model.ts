@@ -10,5 +10,6 @@ export enum Command {
   ATTACK,
   RANDOM,
   TURN,
-  FINISH
+  FINISH,
+  SINGLE
 }
