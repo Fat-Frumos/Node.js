@@ -1,8 +1,13 @@
-import { Player } from "./player.model";
-import { Board } from "../../service/session/Board";
+import { Winner } from "./winner.model";
+import { Room } from "../room/room.model";
+import { Board } from "../board/board.model";
+import { Ship } from "../ship/ship.model";
 
 export interface Session {
-  board: Board;
-  sessionId: number;
-  players: Player[];
+  ships: Ship[];
+  rooms: Room[];
+  gameId: number;
+  boards: Board[];
+  winners?: Winner[];
+  indexPlayer: number;
 }

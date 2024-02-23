@@ -1,7 +1,6 @@
-import { Board } from "./Board";
-import { Player } from "../../model/game/player.model";
+import { GameBoard } from "./GameBoard";
 import { Session } from "../../model/game/session.model";
-import { Position } from "../../model/board/position.model";
+import { Room } from "../../model/room/room.model";
 
 export class GameSessions {
   private static instance: GameSessions;
@@ -22,61 +21,50 @@ export class GameSessions {
     return this.gameSessions.get(sessionId);
   }
   
-  public createGameSession(sessionId: number, players: Player[], board: Board): Session {
+  public createGameSession(sessionId: number, rooms: Room[]): Session {
     if (!this.gameSessions.has(sessionId)) {
       const session: Session = {
-        sessionId: sessionId,
-        players: players,
-        board: board
+        gameId: sessionId,
+        rooms: rooms,
+        indexPlayer: 0,
+        boards: [],
+        ships: []
       };
-      this.gameSessions.set(sessionId, session);
+      this.addGameSession(session);
       return session;
     } else {
       return this.gameSessions.get(sessionId)!;
     }
   }
   
-  public addPlayerToGameSession(gameId: number, player: Player): Session {
-    const session = this.gameSessions.get(gameId);
-    if (session) {
-      session.players.push(player);
-      return session;
-    } else {
-      return this.createGameSession(player.playerId, [player], new Board(10));
-    }
-  }
+  // public addPlayerToGameSession(gameId: number, player: Player): Session {
+  //   const session = this.gameSessions.get(gameId);
+  //   if (session) {
+  //     session.players.push(player);
+  //     return session;
+  //   } else {
+  //     return this.createGameSession(player.playerId, [player], new GameBoard(10));
+  //   }
+  // }
   
   public removeGameSession(gameId: number): void {
     this.gameSessions.delete(gameId);
   }
   
   addGameSession(session: Session): void {
-    this.gameSessions.set(session.sessionId, session);
+    this.gameSessions.set(session.gameId, session);
+    console.log("str".indexOf("o"));
   }
   
-  checkBoard(position: Position, playerId: number): boolean {
-    const border = this.getBorderByPlayerId(playerId);
-    return position.x >= 0 && position.x < border.size && position.y >= 0 && position.y < border.size;
-  }
-  private getBorderByPlayerId(playerId: number): Board {
-    let board = {} as Board;
-    
+  getBoardByPlayerId(playerId: number): GameBoard {  //TODO
+    let board = {} as GameBoard;
     this.gameSessions.forEach(session => {
-      session.players.forEach(player => {
-        if (player.playerId === playerId) {
-          board = session.board;
+      session.rooms.forEach(player => {
+        if (player.id === playerId) {
+          board.roomUsers = player.roomUsers;
         }
       });
     });
     return board;
-  }
-    
-    createPlayer(playerId: number): Player {
-    return {
-      playerId: playerId,
-      ships: [],
-      username: "",
-      password: ""
-    };
   }
 }

@@ -1,7 +1,7 @@
 import { Position } from "../board/position.model";
 
-export interface Message {
-  playerId: number;
-  sessionId: number;
+export interface Attack {
+  gameId: number;
   position: Position;
+  indexPlayer: string;
 }

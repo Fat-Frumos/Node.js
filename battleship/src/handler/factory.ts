@@ -1,39 +1,53 @@
-import { WebSocket } from 'ws';
-import { Command } from "../model/game/command.model";
-import { finishGame, addBot, randomAttack, addShipToBoard, userAttack, startGame, addUserToRoom, createSession, signUp, updateRoom } from "./dispatcher";
+import { Command } from "../model/game/command.type";
+import {
+  addBot,
+  addShipToBoard,
+  addUserToRoom,
+  createRoom,
+  createGame,
+  errorHandler,
+  finishGame,
+  randomAttack,
+  signUp,
+  startGame,
+  updateStateRoom,
+  userAttack
+} from "./dispatcher";
+import { ResponseMessage } from "../model/game/response.model";
 
-export function eventListener(message: string, ws: WebSocket) {
+export function eventListener(message: string): ResponseMessage {
+  
   try {
     const request = JSON.parse(message);
+    console.log(request);
     const { command, data } = request;
     
-    switch (data) {
-      case Command.REGISTRATION:
-        return signUp(request.data, ws);
-      case Command.CREATE_ROOM:
-        return createSession(request.data, ws);
-      case Command.ADD_USER:
-        return addUserToRoom(request.data, ws);
-      case Command.UPDATE_ROOM:
-        return updateRoom(request.data, ws);
-      case Command.ADD_SHIPS:
-        return addShipToBoard(request.data, ws);
-      case Command.START_GAME:
-        return startGame(request.data, ws);
-      case Command.ATTACK:
-        return userAttack(request.data, ws);
-      case Command.RANDOM:
-        return randomAttack(request.data, ws);
-      case Command.SINGLE:
-        return addBot(request.data, ws);
-      case Command.FINISH:
-        return finishGame(request.data, ws);
-      default:
-        console.log("Unsupported command:", command);
-        return null;
+    switch (command) {
+      case Command.reg:
+        return signUp(data);
+      case Command.create_room:
+        return createRoom(data);
+      case Command.add_user_to_room:
+        return addUserToRoom(data);
+      case Command.update_room:
+        return updateStateRoom(data);
+      case Command.add_ships:
+        return addShipToBoard(data);
+      case Command.start_game:
+        return startGame(data);
+        case Command.create_game:
+        return createGame(data);
+      case Command.attack:
+        return userAttack(data);
+      case Command.randomAttack:
+        return randomAttack(data);
+      case Command.single:
+        return addBot(data);
+      case Command.finish:
+        return finishGame(data);
+      default: return errorHandler(command);
     }
-  } catch (error) {
-    console.error("Error parsing message:", error);
-    return null;
+  } catch (error: unknown) {
+    return errorHandler(error);
   }
 }
