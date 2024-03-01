@@ -1,4 +1,4 @@
-import { Position } from "../board/position.model";
+import { Position } from '../board/position.model';
 
 export interface Attack {
   gameId: number;

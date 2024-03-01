@@ -1,12 +1,9 @@
-import { ShipType } from "./ship.type";
-import { Position } from "../board/position.model";
-import { AttackStatus } from "./attack.status.type";
+import { ShipType } from './ship.type';
+import { Position } from '../board/position.model';
 
-export interface Ship {
-  userId: number;
-  type: ShipType;
-  length: number;
-  positions: Position[];
+export interface ShipModel {
+  position: Position;
   direction: boolean;
-  status: AttackStatus;
+  length: number;
+  type: ShipType;
 }

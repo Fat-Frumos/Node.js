@@ -1,5 +1,5 @@
-import WebSocket from "ws";
-import { eventListener } from "../handler/factory";
+import WebSocket from 'ws';
+import { eventListener } from '../handler/factory';
 
 let player1Socket: WebSocket;
 let player2Socket: WebSocket;
@@ -8,16 +8,16 @@ let ws: WebSocket;
 
 beforeAll(() => {
   wss = new WebSocket.Server({ port: 3000 });
-  wss.on("connection", (client) => {
-    client.on("message", (message) => {
+  wss.on('connection', (client) => {
+    client.on('message', (message) => {
       eventListener(message.toString());
     });
   });
 });
 
 beforeEach((done) => {
-  ws = new WebSocket("ws://localhost:3000");
-  ws.on("open", done);
+  ws = new WebSocket('ws://localhost:3001');
+  ws.on('open', done);
 });
 
 afterAll(() => {
@@ -28,33 +28,32 @@ afterEach(() => {
   ws.close();
 });
 
-describe("WebSocket Event Listener", () => {
-  
-  it("should receive a response for registering a new player", (done) => {
+describe('WebSocket Event Listener', () => {
+  it('should receive a response for registering a new player', (done) => {
     ws.send(JSON.stringify({
-      type: "register",
-      data: { name: "user", password: "password" }
+      type: 'register',
+      data: { name: 'user', password: 'password' },
     }));
-    
-    ws.on("message", (message) => {
+
+    ws.on('message', (message) => {
       const response = JSON.parse(message.toString());
-      expect(response).toHaveProperty("userId");
+      expect(response).toHaveProperty('userId');
       done();
     });
   });
 });
 
-describe("Game Room Management", () => {
+describe('Game Room Management', () => {
   let authToken: string;
-  
+
   beforeAll((done) => {
     ws.on('open', () => {
       ws.send(JSON.stringify({
         type: 'login',
-        data: { name: 'user', password: 'password' }
+        data: { name: 'user', password: 'password' },
       }));
     });
-    
+
     ws.on('message', (message) => {
       const response = JSON.parse(message.toString());
       if (response.type === 'login') {
@@ -63,51 +62,51 @@ describe("Game Room Management", () => {
       }
     });
   });
-  
-  it("should create a new game room", (done) => {
+
+  it('should create a new game room', (done) => {
     ws.send(JSON.stringify({
       type: 'create-room',
-      authToken
+      authToken,
     }));
-    
+
     ws.on('message', (message) => {
       const response = JSON.parse(message.toString());
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty("roomId");
+      expect(response.body).toHaveProperty('roomId');
       done();
     });
   });
-  
-  it("should add ships to the game board", (done) => {
+
+  it('should add ships to the game board', (done) => {
     ws.send(JSON.stringify({
       type: 'add-ships',
       authToken,
       data: {
         ships: [
-          { type: "small", position: { x: 1, y: 1 }, direction: true }
-        ]
-      }
+          { type: 'small', position: { x: 1, y: 1 }, direction: true },
+        ],
+      },
     }));
-    
+
     ws.on('message', (message) => {
       const response = JSON.parse(message.toString());
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty("success", true);
+      expect(response.body).toHaveProperty('success', true);
       done();
     });
   });
 });
 
-describe("Gameplay", () => {
+describe('Gameplay', () => {
   let ws: WebSocket;
   let authToken: string;
-  
+
   beforeAll(async () => {
     ws = new WebSocket('ws://localhost:3000');
     ws.on('open', () => {
       ws.send(JSON.stringify({ type: 'login', data: { name: 'user', password: 'password' } }));
     });
-    
+
     ws.on('message', (message) => {
       const response = JSON.parse(message.toString());
       if (response.type === 'login') {
@@ -115,92 +114,91 @@ describe("Gameplay", () => {
       }
     });
   });
-  
-  it("should allow a player to attack", (done) => {
+
+  it('should allow a player to attack', (done) => {
     ws.send(JSON.stringify({
       type: 'attack',
       authToken,
-      data: { x: 1, y: 1 }
+      data: { x: 1, y: 1 },
     }));
-    
+
     ws.on('message', (message) => {
       const response = JSON.parse(message.toString());
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty("result");
+      expect(response.body).toHaveProperty('result');
       done();
     });
   });
 });
 
-describe("WebSocket Command Tests", () => {
-  
-  it("should create a new game room", (done) => {
+describe('WebSocket Command Tests', () => {
+  it('should create a new game room', (done) => {
     const createRoomMessage = JSON.stringify({
-      type: "create_room",
-      data: "",
+      type: 'create_room',
+      data: '',
       id: 0,
     });
-    
-    ws.on("open", () => {
+
+    ws.on('open', () => {
       ws.send(createRoomMessage);
     });
-    
-    ws.on("message", (message) => {
+
+    ws.on('message', (message) => {
       const response = JSON.parse(message.toString());
-      expect(response.type).toBe("create_room");
+      expect(response.type).toBe('create_room');
       done();
     });
   });
-  
-  it("should add a user to a room", (done) => {
+
+  it('should add a user to a room', (done) => {
     const addUserToRoomMessage = JSON.stringify({
-      type: "add_user_to_room",
+      type: 'add_user_to_room',
       data: {
         indexRoom: 123,
       },
       id: 0,
     });
-    
-    ws.on("open", () => {
+
+    ws.on('open', () => {
       ws.send(addUserToRoomMessage);
     });
-    
-    ws.on("message", (message) => {
+
+    ws.on('message', (message) => {
       const response = JSON.parse(message.toString());
-      expect(response.type).toBe("create_game");
+      expect(response.type).toBe('create_game');
       done();
     });
   });
-  
-  it("should update room state", (done) => {
+
+  it('should update room state', (done) => {
     const updateRoomStateMessage = JSON.stringify({
-      type: "update_room",
+      type: 'update_room',
       data: [
         {
           roomId: 123,
           roomUsers: [
-            { name: "Player1", index: 1 },
-            { name: "Player2", index: 2 },
+            { name: 'Player1', index: 1 },
+            { name: 'Player2', index: 2 },
           ],
         },
       ],
       id: 0,
     });
-    
-    ws.on("open", () => {
+
+    ws.on('open', () => {
       ws.send(updateRoomStateMessage);
     });
-    
-    ws.on("message", (message) => {
+
+    ws.on('message', (message) => {
       const response = JSON.parse(message.toString());
-      expect(response.type).toBe("update_room");
+      expect(response.type).toBe('update_room');
       done();
     });
   });
-  
-  it("should add ships to the game board", (done) => {
+
+  it('should add ships to the game board', (done) => {
     const addShipsMessage = JSON.stringify({
-      type: "add_ships",
+      type: 'add_ships',
       data: {
         gameId: 123,
         ships: [
@@ -208,42 +206,41 @@ describe("WebSocket Command Tests", () => {
             position: { x: 1, y: 1 },
             direction: true,
             length: 3,
-            type: "small",
+            type: 'small',
           },
         ],
         indexPlayer: 1,
       },
       id: 0,
     });
-    
-    ws.on("open", () => {
+
+    ws.on('open', () => {
       ws.send(addShipsMessage);
     });
-    
-    ws.on("message", (message) => {
+
+    ws.on('message', (message) => {
       const response = JSON.parse(message.toString());
-      expect(response.type).toBe("start_game");
+      expect(response.type).toBe('start_game');
       done();
     });
   });
 });
 
 describe('WebSocket API Test Cases', () => {
-  
   beforeAll((done) => {
     wss = new WebSocket.Server({ port: 3000 });
-    
+
     wss.on('listening', () => {
       player1Socket = new WebSocket('ws://localhost:3000');
       player2Socket = new WebSocket('ws://localhost:3000');
-      
+
       player1Socket.on('open', () => {
         player2Socket.on('open', () => {
           done();
         });
       });
     });
-    
+
     wss.on('connection', (socket) => {
       socket.on('message', (message) => {
         const parsedMessage = JSON.parse(message.toString());
@@ -276,13 +273,13 @@ describe('WebSocket API Test Cases', () => {
       });
     });
   });
-  
+
   afterAll(() => {
     wss.close();
     player1Socket.close();
     player2Socket.close();
   });
-  
+
   test('Player Registration and Room Creation', (done) => {
     const regMsgPlayer1 = JSON.stringify({
       type: 'reg',
@@ -292,43 +289,39 @@ describe('WebSocket API Test Cases', () => {
       },
       id: 0,
     });
-    
+
     const createRoomMsgPlayer1 = JSON.stringify({
       type: 'create_room',
       data: '',
       id: 0,
     });
-    
+
     player1Socket.on('message', (message) => {
       const parsedMessage = JSON.parse(message.toString());
       expect(parsedMessage.type).toBe('create_game');
       done();
     });
-    
+
     player1Socket.send(regMsgPlayer1);
     player1Socket.send(createRoomMsgPlayer1);
   });
-  
-  
 });
 
-
 describe('WebSocket API Test Cases Game', () => {
-  
   beforeAll((done) => {
     wss = new WebSocket.Server({ port: 3000 });
-    
+
     wss.on('listening', () => {
       player1Socket = new WebSocket('ws://localhost:3000');
       player2Socket = new WebSocket('ws://localhost:3000');
-      
+
       player1Socket.on('open', () => {
         player2Socket.on('open', () => {
           done();
         });
       });
     });
-    
+
     wss.on('connection', (socket) => {
       socket.on('message', (message) => {
         const parsedMessage = JSON.parse(message.toString());
@@ -367,13 +360,13 @@ describe('WebSocket API Test Cases Game', () => {
       });
     });
   });
-  
+
   afterAll(() => {
     wss.close();
     player1Socket.close();
     player2Socket.close();
   });
-  
+
   test('Attack Feedback', (done) => {
     const attackMsg = JSON.stringify({
       type: 'attack',
@@ -385,25 +378,25 @@ describe('WebSocket API Test Cases Game', () => {
       },
       id: 0,
     });
-    
+
     player1Socket.on('message', (message) => {
       const parsedMessage = JSON.parse(message.toString());
       expect(parsedMessage.type).toBe('attack');
       expect(parsedMessage.data.status).toBe('miss');
       done();
     });
-    
+
     player1Socket.send(attackMsg);
   });
-  
-  test("Random Attack", (done) => {
+
+  test('Random Attack', (done) => {
     const randomAttackMsg = JSON.stringify({
-      type: "randomAttack",
+      type: 'randomAttack',
       data: {
         gameId: 123,
-        indexPlayer: 2
+        indexPlayer: 2,
       },
-      id: 0
+      id: 0,
     });
     player2Socket.on('message', (message) => {
       const parsedMessage = JSON.parse(message.toString());
@@ -411,10 +404,10 @@ describe('WebSocket API Test Cases Game', () => {
       expect(parsedMessage.data.status).toBe('miss');
       done();
     });
-    
+
     player2Socket.send(randomAttackMsg);
   });
-  
+
   test('Info about Player Turn', (done) => {
     const turnInfoMsg = JSON.stringify({
       type: 'turn',
@@ -423,24 +416,24 @@ describe('WebSocket API Test Cases Game', () => {
       },
       id: 0,
     });
-    
+
     player1Socket.on('message', (message) => {
       const parsedMessage = JSON.parse(message.toString());
       expect(parsedMessage.type).toBe('turn');
       expect(parsedMessage.data.currentPlayer).toBe(1);
       done();
     });
-    
+
     player2Socket.on('message', (message) => {
       const parsedMessage = JSON.parse(message.toString());
       expect(parsedMessage.type).toBe('turn');
       expect(parsedMessage.data.currentPlayer).toBe(1);
       done();
     });
-    
+
     player1Socket.send(turnInfoMsg);
   });
-  
+
   test('Finish Game', (done) => {
     const finishGameMsg = JSON.stringify({
       type: 'finish',
@@ -449,40 +442,40 @@ describe('WebSocket API Test Cases Game', () => {
       },
       id: 0,
     });
-    
+
     player1Socket.on('message', (message) => {
       const parsedMessage = JSON.parse(message.toString());
       expect(parsedMessage.type).toBe('finish');
       expect(parsedMessage.data.winPlayer).toBe(1);
       done();
     });
-    
+
     player2Socket.on('message', (message) => {
       const parsedMessage = JSON.parse(message.toString());
       expect(parsedMessage.type).toBe('finish');
       expect(parsedMessage.data.winPlayer).toBe(1);
       done();
     });
-    
+
     player1Socket.send(finishGameMsg);
   });
-  
+
   test('Create New Room', (done) => {
     const createRoomMsg = JSON.stringify({
       type: 'create_room',
       data: '',
       id: 0,
     });
-    
+
     player1Socket.on('message', (message) => {
       const parsedMessage = JSON.parse(message.toString());
       expect(parsedMessage.type).toBe('create_game');
       done();
     });
-    
+
     player1Socket.send(createRoomMsg);
   });
-  
+
   test('Add User to Room and Create Game', (done) => {
     const addUserToRoomMsg = JSON.stringify({
       type: 'add_user_to_room',
@@ -491,16 +484,16 @@ describe('WebSocket API Test Cases Game', () => {
       },
       id: 0,
     });
-    
+
     player2Socket.on('message', (message) => {
       const parsedMessage = JSON.parse(message.toString());
       expect(parsedMessage.type).toBe('create_game');
       done();
     });
-    
+
     player2Socket.send(addUserToRoomMsg);
   });
-  
+
   test('Update Room State', (done) => {
     const updateRoomStateMsg = JSON.stringify({
       type: 'update_room',
@@ -517,16 +510,16 @@ describe('WebSocket API Test Cases Game', () => {
       ],
       id: 0,
     });
-    
+
     player1Socket.on('message', (message) => {
       const parsedMessage = JSON.parse(message.toString());
       expect(parsedMessage.type).toBe('update_room');
       done();
     });
-    
+
     player1Socket.send(updateRoomStateMsg);
   });
-  
+
   test('Add Ships to the Game Board', (done) => {
     const addShipsMsg = JSON.stringify({
       type: 'add_ships',
@@ -544,16 +537,16 @@ describe('WebSocket API Test Cases Game', () => {
       },
       id: 0,
     });
-    
+
     player1Socket.on('message', (message) => {
       const parsedMessage = JSON.parse(message.toString());
       expect(parsedMessage.type).toBe('start_game');
       done();
     });
-    
+
     player1Socket.send(addShipsMsg);
   });
-  
+
   test('Start Game', (done) => {
     const startGameMsg = JSON.stringify({
       type: 'start_game',
@@ -570,16 +563,16 @@ describe('WebSocket API Test Cases Game', () => {
       },
       id: 0,
     });
-    
+
     player2Socket.on('message', (message) => {
       const parsedMessage = JSON.parse(message.toString());
       expect(parsedMessage.type).toBe('start_game');
       done();
     });
-    
+
     player2Socket.send(startGameMsg);
   });
-  
+
   test('Login or Create Player', (done) => {
     const playerRegMsg = JSON.stringify({
       type: 'reg',
@@ -589,7 +582,7 @@ describe('WebSocket API Test Cases Game', () => {
       },
       id: 0,
     });
-    
+
     player1Socket.on('message', (message) => {
       const parsedMessage = JSON.parse(message.toString());
       expect(parsedMessage.type).toBe('reg');
@@ -598,10 +591,10 @@ describe('WebSocket API Test Cases Game', () => {
       expect(parsedMessage.data.error).toBe(false);
       done();
     });
-    
+
     player1Socket.send(playerRegMsg);
   });
-  
+
   test('Update Winners', (done) => {
     const updateWinnersMsg = JSON.stringify({
       type: 'update_winners',
@@ -617,14 +610,14 @@ describe('WebSocket API Test Cases Game', () => {
       ],
       id: 0,
     });
-    
+
     player1Socket.on('message', (message) => {
       const parsedMessage = JSON.parse(message.toString());
       expect(parsedMessage.type).toBe('update_winners');
       expect(parsedMessage.data.length).toBe(2);
       done();
     });
-    
+
     player1Socket.send(updateWinnersMsg);
   });
 });

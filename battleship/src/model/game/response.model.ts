@@ -1,9 +1,9 @@
-import { Ship } from "../ship/ship.model";
-import { AttackStatus } from "../ship/attack.status.type";
-import { Command } from "./command.type";
-import { Position } from "../board/position.model";
-import { Winner } from "./winner.model";
-import { RoomUser } from "../room/room.user.model";
+import { AttackStatus } from '../ship/attack.status.type';
+import { Command } from './command.type';
+import { Position } from '../board/position.model';
+import { Winner } from './winner.model';
+import { RoomUser } from '../room/room.user.model';
+import { ShipModel } from "src/model/ship/ship.model";
 
 export interface ResponseMessage {
   type: Command;
@@ -31,18 +31,6 @@ export interface BaseEntities<ResponseData> {
   data: ResponseData[];
 }
 
-export interface RegistrationResponse extends ResponseData {
-  name: string;
-  password: string;
-}
-
-export interface PlayerRegistrationResponse extends ResponseData {
-  name: string;
-  index?: number;
-  error?: boolean;
-  errorText?: string;
-}
-
 export interface RoomStateUpdateResponse extends ResponseData{
   roomId: number;
   roomUsers: RoomUser[];
@@ -68,19 +56,13 @@ export interface CreateGameResponse extends ResponseData {
 
 export interface AddShipsResponse extends ResponseData {
   gameId: number;
-  ships: Ship[];
+  ships: ShipModel[];
   indexPlayer: number;
 }
 
 export interface StartGameResponse extends ResponseData {
-  ships: Ship[];
+  ships: ShipModel[];
   currentPlayerIndex: number;
-}
-
-export interface AttackResponse extends ResponseData {
-  gameId: number;
-  position: Position;
-  indexPlayer: number;
 }
 
 export interface AttackFeedbackResponse extends ResponseData {

@@ -1,9 +1,9 @@
-import { Ship } from "../ship/ship.model";
-import { Cell } from "./cell.model";
-import { User } from "../game/user.model";
+import { Cell } from './cell.model';
+import { User } from '../game/user.model';
+import { ShipModel } from "src/model/ship/ship.model";
 
 export interface Board {
-  ships: Ship[];
+  ships: ShipModel[];
   width: number;
   height: number;
   cells: Cell[][];

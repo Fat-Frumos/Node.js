@@ -1,4 +1,4 @@
-import { Command } from "../model/game/command.type";
+import { Command } from '../model/game/command.type';
 import {
   addBot,
   addShipToBoard,
@@ -11,17 +11,16 @@ import {
   signUp,
   startGame,
   updateStateRoom,
-  userAttack
-} from "./dispatcher";
-import { ResponseMessage } from "../model/game/response.model";
+  userAttack,
+} from './dispatcher';
+import { ResponseMessage } from '../model/game/response.model';
 
 export function eventListener(message: string): ResponseMessage {
-  
   try {
     const request = JSON.parse(message);
     console.log(request);
     const { command, data } = request;
-    
+
     switch (command) {
       case Command.reg:
         return signUp(data);
@@ -35,7 +34,7 @@ export function eventListener(message: string): ResponseMessage {
         return addShipToBoard(data);
       case Command.start_game:
         return startGame(data);
-        case Command.create_game:
+      case Command.create_game:
         return createGame(data);
       case Command.attack:
         return userAttack(data);
