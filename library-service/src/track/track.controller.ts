@@ -1,9 +1,10 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
-  HttpStatus,
+  HttpStatus, NotFoundException,
   Param,
   Post,
   Put, UsePipes, ValidationPipe
@@ -23,26 +24,41 @@ export class TrackController {
   }
   
   @Get(':id')
-  findBy(@Param('id') id: string): Track {
-    return this.tracksService.findById(id);
+  findById(@Param('id') id: string): Track {
+    const track = this.tracksService.findById(id);
+    if (!track) {
+      throw new NotFoundException('Track not found');
+    }
+    return track;
   }
   
   @Post()
   @UsePipes(new ValidationPipe())
   create(@Body() createTrackDto: CreateTrackDto): Track {
-    return this.tracksService.create(createTrackDto);
+    const track = this.tracksService.create(createTrackDto);
+    if (!track) {
+      throw new BadRequestException('Failed to create track');
+    }
+    return track;
   }
   
   @Put(':id')
   @UsePipes(new ValidationPipe())
-  update(@Param('id') id: string,
-         @Body() updateTrackDto: UpdateTrackDto): Track {
-    return this.tracksService.update(id, updateTrackDto);
+  update(@Param('id') id: string, @Body() updateTrackDto: UpdateTrackDto): Track {
+    const track = this.tracksService.update(id, updateTrackDto);
+    if (!track) {
+      throw new BadRequestException('Failed to update track');
+    }
+    return track;
   }
   
   @Delete(':id')
   @UsePipes(new ValidationPipe())
   remove(@Param('id') id: string): HttpStatus {
-    return this.tracksService.remove(id);
+    const status = this.tracksService.remove(id);
+    if (status !== HttpStatus.NO_CONTENT) {
+      throw new BadRequestException('Failed to delete track');
+    }
+    return status;
   }
 }

@@ -9,6 +9,7 @@ import { CreateTrackDto } from "./model/track.create.dto";
 import { UpdateTrackDto } from "./model/track.update.dto";
 import { Track } from "./model/track.entity";
 import { FavoriteService } from "../favorite/favorite.service";
+import { AlbumService } from "../album/album.service";
 
 @Injectable()
 export class TrackService {
@@ -16,7 +17,9 @@ export class TrackService {
   
   constructor(
     @Inject(forwardRef(() => FavoriteService))
-    private readonly favoriteService: FavoriteService
+    private readonly favoriteService: FavoriteService,
+    @Inject(forwardRef(() => AlbumService))
+    private readonly albumService: AlbumService
   ) {}
   
   findAll(): Track[] {
@@ -50,27 +53,22 @@ export class TrackService {
   }
   
   remove(id: string): HttpStatus {
-    const index = this.tracks.findIndex(track => track.id === id);
+    const track = this.findById(id);
+    const index = this.tracks.indexOf(track);
     if (index === -1) {
       throw new NotFoundException('Track not found');
     }
     this.favoriteService.removeFromFavoriteTracks(id);
+    this.updateAlbumTrack(id, null);
     this.tracks.splice(index, 1);
     return HttpStatus.NO_CONTENT;
   }
   
-  updateTracks(albumId: string, updatedAlbumId: string | null): void {
-    this.tracks.forEach(track => {
-      if (track.albumId === albumId) {
-        track.albumId = updatedAlbumId;
-      }
-    });
-  }
-  
-  updateArtists(artistId: string, updatedArtistId: string | null): void {
-    this.tracks.forEach(track => {
-      if (track.artistId === artistId) {
-        track.artistId = updatedArtistId;
+  updateAlbumTrack(trackId: string, updatedTrackId: string | null): void {
+    this.albumService.findAll().forEach(album => {
+      const index = album.id.indexOf(trackId);
+      if (index !== -1) {
+        album.id = updatedTrackId;
       }
     });
   }

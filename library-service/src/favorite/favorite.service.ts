@@ -1,17 +1,16 @@
 import {
-  BadRequestException, forwardRef, Inject,
-  Injectable,
-  NotFoundException
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable, NotFoundException
 } from "@nestjs/common";
-import { Favorite } from "./model/favorite.entity";
 import { Artist } from "../artist/model/artist.entity";
 import { Track } from "../track/model/track.entity";
 import { Album } from "../album/model/album.entity";
-import { FavoriteMessage } from "./model/favorite.message.dto";
 import { ArtistService } from "../artist/artist.service";
 import { AlbumService } from "../album/album.service";
 import { TrackService } from "../track/track.service";
-
+import { isUUID } from "class-validator";
 
 @Injectable()
 export class FavoriteService {
@@ -28,92 +27,86 @@ export class FavoriteService {
     private readonly albumService: AlbumService
   ) {}
   
-  getAllFavorites(): Favorite {
+  findAll(): { artists: Artist[], albums: Album[], tracks: Track[] } {
     return {
-      artists: this.favoriteArtists,
-      albums: this.favoriteAlbums,
-      tracks: this.favoriteTracks,
+      artists: [...this.favoriteArtists],
+      albums: [...this.favoriteAlbums],
+      tracks: [...this.favoriteTracks],
     };
   }
   
-  addToFavoriteTracks(trackId: string): FavoriteMessage {
-    return this.addToFavorites(
-      trackId,
-      this.trackService.findById,
-      this.favoriteTracks,
-      'Track'
-    );
-  }
-  
-  removeFromFavoriteTracks(trackId: string): FavoriteMessage {
-    return this.removeFromFavorites(
-      trackId,
-      this.favoriteTracks,
-      'Track'
-    );
-  }
-  
-  addToFavoriteAlbums(albumId: string): FavoriteMessage {
-    return this.addToFavorites(
-      albumId,
-      this.albumService.findById,
-      this.favoriteAlbums,
-      'Album'
-    );
-  }
-  
-  removeFromFavoriteAlbums(albumId: string): FavoriteMessage {
-    return this.removeFromFavorites(
-      albumId,
-      this.favoriteAlbums,
-      'Album'
-    );
-  }
-  
-  addToFavoriteArtists(artistId: string): FavoriteMessage {
-    return this.addToFavorites(
-      artistId,
-      this.artistService.findById,
-      this.favoriteArtists,
-      'Artist'
-    );
-  }
-  
-  removeFromFavoriteArtists(artistId: string): FavoriteMessage {
-    return this.removeFromFavorites(
-      artistId,
-      this.favoriteArtists,
-      'Artist'
-    );
-  }
-  
-  private addToFavorites<T extends { id: string }>(
-    entityId: string,
-    findByIdFn: (id: string) => T | undefined,
-    favorites: T[],
-    entityName: string
-  ): FavoriteMessage {
-    const entity = findByIdFn(entityId);
-    if (!entity) {
-      throw new NotFoundException(`${entityName} not found`);
+  addToFavoriteArtists(id: string, artist: Artist) {
+    const existingArtist = this.artistService.findById(id);
+    if (existingArtist && !this.checkEntityExistence(id, this.favoriteArtists)) {
+      this.favoriteArtists.push(artist);
+      return this.favoriteArtists.find(a => a.id === id);
     }
-    if (favorites.some(favEntity => favEntity.id === entityId)) {
-      throw new BadRequestException(`${entityName} already exists in favorites`);
+    if (!artist) {
+      throw new NotFoundException('Artist does not exist');
     }
-    favorites.push(entity);
-    return { message: `${entityName} added to favorites` };
+    throw new BadRequestException('Artist is already in favorites');
   }
   
-  private removeFromFavorites<T extends { id: string }>(
-    entityId: string,
-    favoritesArray: T[],
-    entityName: string
-  ): FavoriteMessage {
-    const index = favoritesArray.findIndex(entity => entity.id === entityId);
-    if (index === -1) {
-      throw new NotFoundException(`${entityName} not found in favorites`);
+  addToFavoriteAlbums(id: string, album: Album) {
+    this.validateId(id);
+    const existingAlbum = this.albumService.findById(id);
+    if (!existingAlbum) {
+      throw new NotFoundException('Album does not exist');
     }
-    favoritesArray.splice(index, 1);
-    return { message: `${entityName} removed from favorites` };
+    if (this.checkEntityExistence(id, this.favoriteAlbums)) {
+      throw new BadRequestException('Album is already in favorites');
+    }
+    this.favoriteAlbums.push(album);
+    return this.favoriteAlbums.find(a => a.id === id);
+  }
+  
+  
+  addToFavoriteTracks(id: string, track: Track) {
+    this.validateId(id);
+    const existingTrack = this.trackService.findById(id);
+    if (existingTrack && !this.checkEntityExistence(id, this.favoriteTracks)) {
+      this.favoriteTracks.push(track);
+      return this.favoriteTracks.find(t => t.id === id);
+    }
+    throw new BadRequestException('Track does not exist or is already in favorites');
+  }
+  
+  removeFromFavoriteArtists(id: string) {
+    this.validateId(id);
+    const artistIndex = this.favoriteArtists.findIndex(a => a.id === id);
+    if (artistIndex !== -1) {
+      this.favoriteArtists.splice(artistIndex, 1);
+    } else {
+      throw new NotFoundException('Artist not found in favorites');
+    }
+  }
+  
+  removeFromFavoriteAlbums(id: string) {
+    this.validateId(id);
+    const albumIndex = this.favoriteAlbums.findIndex(a => a.id === id);
+    if (albumIndex === -1) {
+      throw new NotFoundException('Album not found in favorites');
+    }
+    this.favoriteAlbums.splice(albumIndex, 1);
+  }
+  
+  removeFromFavoriteTracks(id: string) {
+    this.validateId(id);
+    const trackIndex = this.favoriteTracks.findIndex(t => t.id === id);
+    if (trackIndex !== -1) {
+      this.favoriteTracks.splice(trackIndex, 1);
+    } else {
+      throw new NotFoundException('Track not found in favorites');
+    }
+  }
+  
+  private checkEntityExistence(id: string, favorites: any[]): boolean {
+    return favorites.some(favorite => favorite.id === id);
+  }
+  
+  validateId(id: string) {
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid ID format');
+    }
   }
 }

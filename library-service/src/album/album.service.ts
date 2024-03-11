@@ -57,16 +57,8 @@ export class AlbumService {
       throw new NotFoundException('Album not found');
     }
     this.favoriteService.removeFromFavoriteAlbums(id);
-    this.trackService.updateTracks(id, null);
+    this.trackService.update(id, null);
     this.albums.splice(index, 1);
     return HttpStatus.NO_CONTENT;
-  }
-  
-  updateArtists(artistId: string, updatedArtistId: string | null): void {
-    this.albums.forEach(album => {
-      if (album.artistId === artistId) {
-        album.artistId = updatedArtistId;
-      }
-    });
   }
 }

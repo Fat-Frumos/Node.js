@@ -2,8 +2,7 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
-  HttpStatus,
+  Get, HttpCode, HttpStatus,
   Param,
   Post,
   Put, UsePipes, ValidationPipe
@@ -15,34 +14,36 @@ import { User } from "./model/user.entity";
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly usersService: UserService) {}
+  constructor(private readonly userService: UserService) {}
   
   @Get()
   findAll(): User[] {
-    return this.usersService.findAll();
+    return this.userService.findAll();
   }
   
   @Get(':id')
-  findBy(@Param('id') id: string): User {
-    return this.usersService.findById(id);
+  findOne(@Param('id') id: string){
+   return this.userService.findOne(id);
   }
   
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe())
-  create(@Body() createUserDto: CreateUserDto): User {
-    return this.usersService.create(createUserDto);
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.userService.create(createUserDto);
   }
   
   @Put(':id')
   @UsePipes(new ValidationPipe())
-  updatePassword(@Param('id') id: string,
-                 @Body() updatePasswordDto: UpdatePasswordDto): User {
-    return this.usersService.updatePassword(id, updatePasswordDto);
+  update(@Param('id') id: string,
+         @Body() updatePasswordDto: UpdatePasswordDto): void {
+    this.userService.updatePassword(id, updatePasswordDto);
   }
   
   @Delete(':id')
   @UsePipes(new ValidationPipe())
-  remove(@Param('id') id: string): HttpStatus {
-    return this.usersService.remove(id);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  delete(@Param('id') id: string): void {
+    this.userService.remove(id);
   }
 }

@@ -1,35 +1,29 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  ForbiddenException,
-  HttpStatus
-} from "@nestjs/common";
-import { v4 as uuidv4 } from 'uuid';
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { CreateUserDto } from "./model/user.create.dto";
 import { UpdatePasswordDto } from "./model/user.update.dto";
 import { User } from "./model/user.entity";
+import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 
 @Injectable()
 export class UserService {
   private readonly users: User[] = [];
   
   findAll(): User[] {
-    return this.users.map(({ password, ...user }) => user);
+    return this.users;
   }
   
-  findById(id: string): User {
-    const user: User = this.users.find(user => user.id === id);
+  findOne(id: string): User {
+    if (!uuidValidate(id)) {
+      throw new HttpException('Invalid ID', HttpStatus.BAD_REQUEST);
+    }
+    const user = this.users.find(user => user.id === id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
     return user;
   }
   
-  create(createUserDto: CreateUserDto): User {
-    if (!createUserDto.login || !createUserDto.password) {
-      throw new BadRequestException('Login and password are required');
-    }
+  create(createUserDto: CreateUserDto): Omit<User, 'password'> {
     const newUser: User = {
       id: uuidv4(),
       login: createUserDto.login,
@@ -39,24 +33,31 @@ export class UserService {
       updatedAt: Date.now(),
     };
     this.users.push(newUser);
-    return newUser;
+    const { password, ...userWithoutPassword } = newUser;
+    return userWithoutPassword;
   }
   
-  updatePassword(id: string, updatePasswordDto: UpdatePasswordDto): User {
-    const user: User = this.findById(id);
+  updatePassword(id: string, updatePasswordDto: UpdatePasswordDto): Omit<User, 'password'> {
+    const user = this.findOne(id);
     if (updatePasswordDto.oldPassword !== user.password) {
-      throw new ForbiddenException('Old password is incorrect');
+      throw new HttpException('Old password is incorrect', HttpStatus.FORBIDDEN);
     }
     user.password = updatePasswordDto.newPassword;
-    return user;
+    user.version += 1;
+    user.updatedAt = Date.now();
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
   
-  remove(id: string): HttpStatus {
+  remove(id: string): HttpStatus  {
+    if (!uuidValidate(id)) {
+      throw new HttpException('Invalid ID', HttpStatus.BAD_REQUEST);
+    }
     const index = this.users.findIndex(user => user.id === id);
     if (index === -1) {
-      throw new NotFoundException('User not found');
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
     this.users.splice(index, 1);
-    return HttpStatus.CREATED;
+    return HttpStatus.NO_CONTENT;
   }
 }

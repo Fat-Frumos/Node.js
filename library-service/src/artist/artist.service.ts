@@ -1,6 +1,7 @@
 import {
-  BadRequestException, forwardRef,
-  HttpStatus, Inject,
+  BadRequestException,
+  forwardRef, HttpStatus,
+  Inject,
   Injectable,
   NotFoundException
 } from "@nestjs/common";
@@ -14,7 +15,6 @@ import { TrackService } from "../track/track.service";
 
 @Injectable()
 export class ArtistService {
-  
   constructor(
     @Inject(forwardRef(() => AlbumService))
     private readonly albumService: AlbumService,
@@ -54,21 +54,19 @@ export class ArtistService {
   }
   
   remove(id: string): HttpStatus {
-    const index = this.artists.findIndex(artist => artist.id === id);
-    this.updateAlbumTrack(id, null);
-    this.trackService.updateTracks(id, null);
-    this.albumService.updateArtists(id, null);
-    this.favoriteService.removeFromFavoriteArtists(id);
-    this.artists.splice(index, 1);
-    
+    const artist = this.findById(id);
+    const index = this.artists.indexOf(artist);
     if (index === -1) {
       throw new NotFoundException('Artist not found');
     }
+    this.updateAlbumTrack(id, null);
+    this.trackService.update(id, null);
+    this.favoriteService.removeFromFavoriteArtists(id);
     this.artists.splice(index, 1);
     return HttpStatus.NO_CONTENT;
   }
   
-  updateAlbumTrack(artistId: string, updatedArtistId: string | null): void {
+  private updateAlbumTrack(artistId: string, updatedArtistId: string | null): void {
     this.albumService.findAll().forEach(album => {
       if (album.artistId === artistId) {
         album.artistId = updatedArtistId;

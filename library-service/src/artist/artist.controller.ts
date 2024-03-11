@@ -1,12 +1,14 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Param,
   Body,
-  HttpStatus, UsePipes, ValidationPipe
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put
 } from "@nestjs/common";
 import { ArtistService } from "./artist.service";
 import { CreateArtistDto } from "./model/artist.create.dto";
@@ -23,26 +25,27 @@ export class ArtistController {
   }
   
   @Get(':id')
-  findBy(@Param('id') id: string): Artist {
+  findById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Artist {
     return this.artistsService.findById(id);
   }
   
   @Post()
-  @UsePipes(new ValidationPipe())
+  @HttpCode(HttpStatus.CREATED)
   create(@Body() createArtistDto: CreateArtistDto): Artist {
     return this.artistsService.create(createArtistDto);
   }
   
   @Put(':id')
-  @UsePipes(new ValidationPipe())
   update(@Param('id') id: string,
-         @Body() updateArtistDto: UpdateArtistDto): Artist {
-    return this.artistsService.update(id, updateArtistDto);
+         @Body() updateArtistDto: UpdateArtistDto): HttpStatus {
+    this.artistsService.update(id, updateArtistDto);
+    return HttpStatus.NO_CONTENT;
   }
   
   @Delete(':id')
-  @UsePipes(new ValidationPipe())
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string): HttpStatus {
-    return this.artistsService.remove(id);
+    this.artistsService.remove(id);
+    return HttpStatus.NO_CONTENT;
   }
 }
