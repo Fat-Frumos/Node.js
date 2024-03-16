@@ -1,4 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Module } from "@nestjs/common";
 
-@Module({})
-export class TrackModule {}
+@Module({
+  providers: []
+})
+export class TrackModule {
+}

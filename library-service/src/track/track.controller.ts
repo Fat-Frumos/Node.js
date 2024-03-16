@@ -1,64 +1,49 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
-  HttpStatus, NotFoundException,
+  HttpCode, HttpStatus,
   Param,
   Post,
   Put, UsePipes, ValidationPipe
 } from "@nestjs/common";
-import { UpdateTrackDto } from "./model/track.update.dto";
-import { CreateTrackDto } from "./model/track.create.dto";
+import { TrackDto } from "./model/track.dto";
 import { TrackService } from "./track.service";
 import { Track } from "./model/track.entity";
 
 @Controller('track')
 export class TrackController {
-  constructor(private readonly tracksService: TrackService) {}
+  constructor(
+    private readonly service: TrackService) {}
   
   @Get()
   findAll(): Track[] {
-    return this.tracksService.findAll();
+    return this.service.findAll();
   }
   
   @Get(':id')
-  findById(@Param('id') id: string): Track {
-    const track = this.tracksService.findById(id);
-    if (!track) {
-      throw new NotFoundException('Track not found');
-    }
-    return track;
+  findBy(@Param('id') id: string): Track {
+    return this.service.findById(id);
   }
   
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe())
-  create(@Body() createTrackDto: CreateTrackDto): Track {
-    const track = this.tracksService.create(createTrackDto);
-    if (!track) {
-      throw new BadRequestException('Failed to create track');
-    }
-    return track;
+  create(@Body() dto: TrackDto): void {
+    return this.service.create(dto);
   }
   
   @Put(':id')
   @UsePipes(new ValidationPipe())
-  update(@Param('id') id: string, @Body() updateTrackDto: UpdateTrackDto): Track {
-    const track = this.tracksService.update(id, updateTrackDto);
-    if (!track) {
-      throw new BadRequestException('Failed to update track');
-    }
-    return track;
+  update(@Param('id') id: string,
+         @Body() dto: TrackDto) {
+    return this.service.update(id, dto);
   }
   
   @Delete(':id')
-  @UsePipes(new ValidationPipe())
-  remove(@Param('id') id: string): HttpStatus {
-    const status = this.tracksService.remove(id);
-    if (status !== HttpStatus.NO_CONTENT) {
-      throw new BadRequestException('Failed to delete track');
-    }
-    return status;
+  @HttpCode(HttpStatus.NO_CONTENT)
+  delete(@Param('id') id: string): void {
+    return this.service.remove(id);
   }
 }

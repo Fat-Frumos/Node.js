@@ -6,15 +6,15 @@ import {
   Delete,
   Param,
   Body,
-  HttpStatus, UsePipes, ValidationPipe
+  HttpStatus, UsePipes, ValidationPipe, HttpCode
 } from "@nestjs/common";
 import { Album } from "./model/album.entity";
 import { AlbumService } from "./album.service";
-import { CreateAlbumDto } from "./model/album.create.dto";
-import { UpdateAlbumDto } from "./model/album.update.dto";
+import { AlbumDto } from "./model/album.dto";
 
 @Controller('album')
 export class AlbumController {
+  
   constructor(private readonly albumsService: AlbumService) {}
   
   @Get()
@@ -28,21 +28,23 @@ export class AlbumController {
   }
   
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe())
-  create(@Body() createAlbumDto: CreateAlbumDto): Album {
+  create(@Body() createAlbumDto: AlbumDto): void {
     return this.albumsService.create(createAlbumDto);
   }
   
   @Put(':id')
   @UsePipes(new ValidationPipe())
   update(@Param('id') id: string,
-         @Body() updateAlbumDto: UpdateAlbumDto): Album {
+         @Body() updateAlbumDto: AlbumDto): Album {
     return this.albumsService.update(id, updateAlbumDto);
   }
   
   @Delete(':id')
   @UsePipes(new ValidationPipe())
-  remove(@Param('id') id: string): HttpStatus {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id') id: string): void {
     return this.albumsService.remove(id);
   }
 }
