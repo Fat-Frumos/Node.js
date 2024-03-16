@@ -1,12 +1,5 @@
 import { Module, ValidationPipe } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { AlbumModule } from "./album/album.module";
-import { UserModule } from "./user/user.module";
-import { ArtistModule } from "./artist/artist.module";
-import { TrackModule } from "./track/track.module";
-import { FavoriteModule } from "./favorite/favorite.module";
-import { UserController } from "./user/user.controller";
-import { UserService } from "./user/user.service";
 import { TrackController } from "./track/track.controller";
 import { TrackService } from "./track/track.service";
 import { ArtistController } from "./artist/artist.controller";
@@ -15,21 +8,22 @@ import { AlbumController } from "./album/album.controller";
 import { AlbumService } from "./album/album.service";
 import { FavoriteService } from "./favorite/favorite.service";
 import { FavoriteController } from "./favorite/favorite.controller";
-import { APP_FILTER, APP_PIPE } from "@nestjs/core";
-import { ValidationExceptionFilter } from "./utils/error.handler.controller";
+import { APP_PIPE } from "@nestjs/core";
+import { FavoriteDao } from "./favorite/favorite.dao";
+import { ArtistDao } from "./artist/artist.dao";
+import { AlbumDao } from "./album/album.dao";
+import { TrackDao } from "./track/track.dao";
+import { UserService } from "./user/user.service";
+import { UserController } from "./user/user.controller";
 
 @Module({
   imports: [ConfigModule.forRoot({
     isGlobal: true
   }),
-    UserModule,
-    TrackModule,
-    AlbumModule,
-    ArtistModule,
-    FavoriteModule],
+ ],
   controllers: [
-    UserController,
     TrackController,
+    UserController,
     AlbumController,
     ArtistController,
     FavoriteController],
@@ -38,15 +32,18 @@ import { ValidationExceptionFilter } from "./utils/error.handler.controller";
       provide: APP_PIPE,
       useClass: ValidationPipe
     },
-    {
-      provide: APP_FILTER,
-      useClass: ValidationExceptionFilter
-    },
-    UserService,
     TrackService,
     AlbumService,
     ArtistService,
-    FavoriteService]
+    FavoriteService,
+    UserService,
+    FavoriteDao,
+    ArtistDao,
+    AlbumDao,
+    TrackDao
+    ],
+  exports: [FavoriteDao],
 })
+
 export class AppModule {
 }

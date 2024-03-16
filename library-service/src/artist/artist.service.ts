@@ -1,76 +1,50 @@
-import {
-  BadRequestException,
-  forwardRef, HttpStatus,
-  Inject,
-  Injectable,
-  NotFoundException
-} from "@nestjs/common";
-import { v4 as uuidv4 } from "uuid";
-import { CreateArtistDto } from "./model/artist.create.dto";
-import { UpdateArtistDto } from "./model/artist.update.dto";
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { ArtistDto } from "./model/artist.dto";
 import { Artist } from "./model/artist.entity";
-import { AlbumService } from "../album/album.service";
-import { FavoriteService } from "../favorite/favorite.service";
-import { TrackService } from "../track/track.service";
+import { ArtistDao } from "./artist.dao";
+import { checkId, hasAllFields } from "../utils/validator";
 
 @Injectable()
 export class ArtistService {
-  constructor(
-    @Inject(forwardRef(() => AlbumService))
-    private readonly albumService: AlbumService,
-    @Inject(forwardRef(() => TrackService))
-    private readonly trackService: TrackService,
-    @Inject(forwardRef(() => FavoriteService))
-    private readonly favoriteService: FavoriteService
-  ) {}
   
-  private readonly artists: Artist[] = [];
+  constructor(
+    private readonly dao: ArtistDao
+  ) {
+  }
   
   findAll(): Artist[] {
-    return this.artists;
+    return this.dao.getAll();
   }
   
   findById(id: string): Artist {
-    const artist: Artist = this.artists.find(artist => artist.id === id);
-    if (!artist) {
-      throw new NotFoundException('Artist not found');
+    checkId(id);
+    this.dao.isArtistExist(id);
+    return this.dao.getById(id);
+  }
+  
+  create(createArtistDto: ArtistDto): Artist {
+    if (!hasAllFields(createArtistDto, 'artist')) {
+      throw new BadRequestException(
+        "Body does not contain required fields");
+    } else {
+      return this.dao.createArtist(createArtistDto);
     }
-    return artist;
   }
   
-  create(createArtistDto: CreateArtistDto): Artist {
-    if (!createArtistDto.name) {
-      throw new BadRequestException('Name is required');
+  update(id: string, updateArtistDto: ArtistDto): Artist {
+    checkId(id);
+    if (!hasAllFields(updateArtistDto, 'artist')) {
+      throw new BadRequestException(
+        'artistId is invalid');
     }
-    const artist: Artist = { id: uuidv4(), ...createArtistDto };
-    this.artists.push(artist);
-    return artist;
+    this.dao.isArtistExist(id);
+    return this.dao.updateArtist(id, updateArtistDto);
   }
   
-  update(id: string, updateArtistDto: UpdateArtistDto): Artist {
-    const artist: Artist = this.findById(id);
-    Object.assign(artist, updateArtistDto);
-    return artist;
-  }
-  
-  remove(id: string): HttpStatus {
-    const artist = this.findById(id);
-    const index = this.artists.indexOf(artist);
-    if (index === -1) {
-      throw new NotFoundException('Artist not found');
-    }
-    this.updateAlbumTrack(id, null);
-    this.trackService.update(id, null);
-    this.favoriteService.removeFromFavoriteArtists(id);
-    this.artists.splice(index, 1);
-    return HttpStatus.NO_CONTENT;
-  }
-  
-  private updateAlbumTrack(artistId: string, updatedArtistId: string | null): void {
-    this.albumService.findAll().forEach(album => {
-      if (album.artistId === artistId) {
-        album.artistId = updatedArtistId;
-      }
-    });
+  remove(id: string): void {
+    checkId(id);
+    this.dao.isArtistExist(id);
+    this.dao.deleteArtist(id);
+    this.dao.deleteArtistFromFavorites(id);
   }
 }
